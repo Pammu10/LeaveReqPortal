@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './global.css';
 
 const LeaveRequest = () => {
   const navigate = useNavigate();
@@ -86,17 +85,21 @@ const LeaveRequest = () => {
 
   return (
     <div className="container">
-      <h1 className="my-4">Hostel Leave Request Screen</h1>
-      <div className="btn-group mb-4">
-        <button className="btn btn-primary" onClick={() => setView('request')}>Leave Request</button>
-        <button className="btn btn-secondary" onClick={() => setView('status')}>Leave Status</button>
-        <button className="btn btn-info" onClick={() => setView('history')}>Leave History</button>
+      
+      <div className="btn-group d-grid gap-2 col-sm-10">
+        <h1 className='text-center'>Hostel Leave Request Screen</h1>
+        <div className='row'>
+        <button className="btn btn-warning m-1 rounded col-sm" onClick={() => setView('request')}>Leave Request</button>
+        <button className="btn btn-warning m-1 rounded col-sm" onClick={() => setView('status')}>Leave Status</button>
+        <button className="btn btn-warning m-1 rounded col-sm" onClick={() => setView('history')}>Leave History</button>
+        </div>
+       
       </div>
       {view === 'request' && (
         <div>
-          <form className="form-horizontal" onSubmit={handleSubmit}>
+          <form className="form d-grid" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="control-label col-sm-2" htmlFor="Ltype">Leave Type</label>
+              <label className="control-label" htmlFor="Ltype">Leave Type</label>
               <div className="col-sm-10">
                 <select className="form-control" name="Ltype" id="Ltype">
                   <option value="select">-Select-</option>
@@ -108,43 +111,43 @@ const LeaveRequest = () => {
               </div>
             </div>
             <div className="form-group">
-              <label className="control-label col-sm-2" htmlFor="Visit">Visiting Place</label>
+              <label className="control-label" htmlFor="Visit">Visiting Place</label>
               <div className="col-sm-10">
                 <input className="form-control" type="text" name="Visit" id="Visit" required />
               </div>
             </div>
             <div className="form-group">
-              <label className="control-label col-sm-2" htmlFor="fdate">From Date</label>
+              <label className="control-label" htmlFor="fdate">From Date</label>
               <div className="col-sm-10">
                 <input className="form-control" type="date" name="fdate" id="fdate" required />
               </div>
             </div>
             <div className="form-group">
-              <label className="control-label col-sm-2" htmlFor="tform">Time From</label>
+              <label className="control-label" htmlFor="tform">Time From</label>
               <div className="col-sm-10">
                 <input className="form-control" type="time" name="tform" id="tform" required />
               </div>
             </div>
             <div className="form-group">
-              <label className="control-label col-sm-2" htmlFor="tdate">To Date</label>
+              <label className="control-label" htmlFor="tdate">To Date</label>
               <div className="col-sm-10">
                 <input className="form-control" type="date" name="tdate" id="tdate" required />
               </div>
             </div>
             <div className="form-group">
-              <label className="control-label col-sm-2" htmlFor="tto">Time To</label>
+              <label className="control-label" htmlFor="tto">Time To</label>
               <div className="col-sm-10">
                 <input className="form-control" type="time" name="tto" id="tto" required />
               </div>
             </div>
             <div className="form-group">
-              <label className="control-label col-sm-2" htmlFor="reason">Reason</label>
+              <label className="control-label" htmlFor="reason">Reason</label>
               <div className="col-sm-10">
                 <textarea className="form-control" name="reason" id="reason" required></textarea>
               </div>
             </div>
             <div className="form-group">
-              <div className="col-sm-offset-2 col-sm-10">
+              <div className="d-grid gap-2 col-sm-10 mt-4">
                 <button type="submit" className="btn btn-warning">Submit Leave Application</button>
               </div>
             </div>
@@ -152,30 +155,32 @@ const LeaveRequest = () => {
         </div>
       )}
       {view === 'status' && (
-        <div>
+        <div className='d-grid gap-2 col-sm-10'>
           <h2>Leave Data</h2>
-          <div className='table-container'>
-          <table className="table table-bordered table-responsive">
+          <div className='table-responsive'>
+          <table className="table table-warning table-striped table-hover align-middle">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Leave Type</th>
                 <th>Visiting Place</th>
                 <th>Reason</th>
                 <th>From Date</th>
                 <th>From Time</th>
+                <th>To Date</th>
+                <th>To Time</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {leaveData.map((data, index) => (
                 <tr key={index}>
-                  <td>{data.id}</td>
                   <td>{data.leave_type}</td>
                   <td>{data.visiting_place}</td>
                   <td>{data.reason}</td>
                   <td>{new Date(data.from_date).toLocaleDateString()}</td>
                   <td>{data.from_time}</td>
+                  <td>{new Date(data.to_date).toLocaleDateString()}</td>
+                  <td>{data.to_time}</td>
                   <td>{data.status}</td>
                 </tr>
               ))}
@@ -185,30 +190,32 @@ const LeaveRequest = () => {
         </div>
       )}
       {view === 'history' && (
-        <div>
+        <div className='d-grid gap-2 col-sm-10'>
           <h2>Leave History</h2>
-          <div className='table-container'>
-          <table className="table">
+          <div className='table-responsive'>
+          <table className="table table-warning table-striped table-hover table align-middle">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Leave Type</th>
                 <th>Visiting Place</th>
                 <th>Reason</th>
                 <th>From Date</th>
                 <th>From Time</th>
+                <th>To Date</th>
+                <th>To Time</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {leaveHistory.map((item, index) => (
                 <tr key={index}>
-                  <td>{item.id}</td>
                   <td>{item.leave_type}</td>
                   <td>{item.visiting_place}</td>
                   <td>{item.reason}</td>
                   <td>{new Date(item.from_date).toLocaleDateString()}</td>
                   <td>{item.from_time}</td>
+                  <td>{new Date(item.to_date).toLocaleDateString()}</td>
+                  <td>{item.to_time}</td>
                   <td>{item.status}</td>
                 </tr>
               ))}

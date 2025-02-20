@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './global.css';
 import { useNavigate } from 'react-router-dom';
 
 const LeaveApproval = () => {
@@ -46,8 +45,7 @@ const LeaveApproval = () => {
         body: JSON.stringify({ id, status })
       });
 
-      const result = await response.json();
-      alert(result.message);
+      await response.json();
       fetchPendingLeaves();
     } catch (error) {
       console.error("Error updating leave status:", error);
@@ -72,16 +70,19 @@ const LeaveApproval = () => {
   }, [navigate]);
 
   return (
-    <div>
+    <div className='container'>
       <h2>Pending Leave Requests</h2>
-      <table className='table'>
+      <div className='table-responsive'>
+      <table className='table table-warning table-striped table-hover table align-middle'>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Student Reg</th>
             <th>Leave Type</th>
             <th>Visiting Place</th>
             <th>From Date</th>
+            <th>From Time</th>
             <th>To Date</th>
+            <th>To Time</th>
             <th>Reason</th>
             <th>Status</th>
             <th>Action</th>
@@ -89,26 +90,31 @@ const LeaveApproval = () => {
         </thead>
         <tbody>
           {pendingLeaves.length === 0 ? (
-            <tr><td colSpan="8">No pending leave requests</td></tr>
+            <tr><td colSpan="10">No pending leave requests</td></tr>
           ) : (
             pendingLeaves.map(item => (
               <tr key={item.id}>
-                <td>{item.id}</td>
+                <td>{item.studentID}</td>
                 <td>{item.leave_type}</td>
                 <td>{item.visiting_place}</td>
                 <td>{new Date(item.from_date).toLocaleDateString()}</td>
+                <td>{item.from_time}</td>
                 <td>{new Date(item.to_date).toLocaleDateString()}</td>
+                <td>{item.to_time}</td>
                 <td>{item.reason}</td>
                 <td>{item.status}</td>
                 <td>
-                  <button className="approve" onClick={() => updateStatus(item.id, 'approved')}>Approve</button>
-                  <button className="reject" onClick={() => updateStatus(item.id, 'rejected')}>Reject</button>
+                  <div className="btn-group-vertical">
+                  <button className="btn btn-success p-1 m-1 rounded" onClick={() => updateStatus(item.id, 'approved')}>Approve</button>
+                  <button className="btn btn-danger p-1 m-1 rounded" onClick={() => updateStatus(item.id, 'rejected')}>Reject</button>
+                  </div>
                 </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
+    </div>
     </div>
   );
 };
