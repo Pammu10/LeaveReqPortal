@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const LeaveApproval = () => {
   const navigate = useNavigate();
   const [pendingLeaves, setPendingLeaves] = useState([]);
+  const [pending, setPending] = useState(true);
   useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -33,6 +34,26 @@ const LeaveApproval = () => {
       console.error("Error fetching leave requests:", error);
     }
   };
+
+
+  const fetchAllLeaves = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch("http://localhost:5000/all-leaves", 
+        {headers: {
+          'Authorization': `Bearer ${token}`
+        }}
+      );
+      if (response.status === 403) {
+        navigate('/');
+        return;
+      }
+      const data = await response.json();
+      setPendingLeaves(data);
+    } catch (error) {
+      console.error("Error fetching leave requests:", error);
+    }
+  }
 
   const updateStatus = async (id, status) => {
     try {
@@ -69,14 +90,24 @@ const LeaveApproval = () => {
     }
   }, [navigate]);
 
+   useEffect(() => {
+      if (pending) fetchPendingLeaves();
+      else fetchAllLeaves();
+    }, [pending]);
+
   return (
-    <div className='container'>
-      <h2>Pending Leave Requests</h2>
+    <div className='container d-grid gap-2 p-1'>
+      <div className='row'>
+      <h2 className='btn btn-warning col m-1 p-1' onClick={() => setPending(true)}>Pending Leave Requests</h2>
+      <h2 className='btn btn-warning col m-1 p-1' onClick={() => setPending(false)}>All Leave Requests</h2>
+      </div>
       <div className='table-responsive'>
       <table className='table table-warning table-striped table-hover table align-middle'>
         <thead>
           <tr>
             <th>Student Reg</th>
+            <th>Student Name</th>
+            <th>Student Year</th>
             <th>Leave Type</th>
             <th>Visiting Place</th>
             <th>From Date</th>
@@ -90,11 +121,13 @@ const LeaveApproval = () => {
         </thead>
         <tbody>
           {pendingLeaves.length === 0 ? (
-            <tr><td colSpan="10">No pending leave requests</td></tr>
+            <tr><td colSpan="12">No pending leave requests</td></tr>
           ) : (
             pendingLeaves.map(item => (
               <tr key={item.id}>
                 <td>{item.studentID}</td>
+                <td>{item.student_name}</td>
+                <td>{item.student_year}</td>
                 <td>{item.leave_type}</td>
                 <td>{item.visiting_place}</td>
                 <td>{new Date(item.from_date).toLocaleDateString()}</td>

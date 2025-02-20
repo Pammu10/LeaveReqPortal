@@ -175,7 +175,7 @@ app.post('/submit-leave', verifyToken, (req, res) => {
 // HOD PAGES
 
 app.get("/pending-leaves", verifyToken, checkHOD, (req, res) => {
-    const query = "SELECT * FROM leave_requests WHERE status = 'pending'";
+    const query = "SELECT * from leave_requests l, student_records r where l.studentID = r.registration_number AND l.status = 'pending' ORDER BY created_at DESC";
     db.query(query, (err, result) => {
         if (err) {
             console.error("Database Query Error:", err);
@@ -184,6 +184,19 @@ app.get("/pending-leaves", verifyToken, checkHOD, (req, res) => {
         res.json(result);
     });
 });
+
+
+app.get("/all-leaves", verifyToken, checkHOD, (req, res) => {
+  const query = "SELECT * from leave_requests l, student_records r where l.studentID = r.registration_number ORDER BY created_at DESC;";
+  db.query(query, (err, result) => {
+      if (err) {
+          console.error("Database Query Error:", err);
+          return res.status(500).json({ message: "Internal Server Error" });
+      }
+      res.json(result);
+  });
+});
+
 
 app.post("/update-leave-status", verifyToken, checkHOD, (req, res) => {
     const { id, status } = req.body;

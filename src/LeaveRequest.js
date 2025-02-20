@@ -71,6 +71,7 @@ const LeaveRequest = () => {
       }
       const result = await response.json();
       alert(result.message);
+      setView('status');
       form.reset();
   
     } catch (error) {
