@@ -52,6 +52,7 @@ const LeaveRequest = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const form = e.target;
     const token = localStorage.getItem('token');
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
@@ -65,8 +66,14 @@ const LeaveRequest = () => {
         },
         body: JSON.stringify(data)
       });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text);
+      }
       const result = await response.json();
       alert(result.message);
+      form.reset();
+  
     } catch (error) {
       console.error('Error submitting leave request:', error);
     }

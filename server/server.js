@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql2 = require('mysql2');
@@ -12,10 +13,10 @@ app.use(cors({
 }))
 // MySQL Connection Setup
 const db = mysql2.createConnection({
-    host: 'localhost', //ENV
-    user: 'root', //ENV
-    password: 'Pammu10Pammu@10', //ENV
-    database: 'hod_leave', //ENV
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER, 
+    password: process.env.DB_PASSWORD, 
+    database: process.env.DB_NAME,
     port: 3306,
     multipleStatements: true
 });
@@ -24,7 +25,7 @@ db.connect((err) => {
     console.log('Connected to database');
 });
 
-const JWT_SECRET = 'your_jwt_secret'; //ENV
+const JWT_SECRET = process.env.JWT_SECRET;
 
 
 
@@ -156,12 +157,11 @@ app.post('/submit-leave', verifyToken, (req, res) => {
     try{
     const { Ltype, Visit, fdate, tform, tdate, tto, reason } = req.body;
     const regno = req.studentId;
-    console.log(req.studentId);
     const query = 'INSERT INTO leave_requests (leave_type, visiting_place, from_date, from_time, to_date, to_time, reason, studentID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
     
     db.query(query, [Ltype, Visit, fdate, tform, tdate, tto, reason, regno], (err, result) => {
         if (err) throw err;
-        res.send('Leave application submitted successfully');
+        res.status(200).json({message:'Leave application submitted successfully'});
     });
     }
     catch(err){

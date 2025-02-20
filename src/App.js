@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LeaveRequest from './LeaveRequest';
 import LeaveApproval from './LeaveApproval';
@@ -7,11 +7,11 @@ import Header from './Header';
 import NoPage from './NoPage';
 import './index.css';
 import './global.css';
+import { AuthContext, AuthProvider } from './AuthContext';
 
 
 function App() {
-  let token = localStorage.getItem('token');
-
+  const {token} = useContext(AuthContext)
   return (
     <Router>
       <div className="App">
@@ -27,4 +27,10 @@ function App() {
   );
 }
 
-export default App;
+export default function AppWrapper() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}

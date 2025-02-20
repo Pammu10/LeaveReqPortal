@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './global.css';
+import { AuthContext } from './AuthContext';
 
 const Header = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState('User');
   const token = localStorage.getItem('token');
   const user = token ? JSON.parse(atob(token.split('.')[1])) : null;
-
+  const { signOut } = useContext(AuthContext);
   const handleSignOut = () => {
     localStorage.removeItem('token');
+    signOut();
     navigate('/');
   };
   const getUser = async() => {

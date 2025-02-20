@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import './global.css';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from './AuthContext';
+
 
 
 const Auth = () => {
@@ -13,6 +15,7 @@ const Auth = () => {
     email: '',
     password: ''
   });
+  const { signIn } = useContext(AuthContext);
 
     useEffect(() => {
       const token = localStorage.getItem('token');
@@ -44,7 +47,7 @@ const Auth = () => {
       if (data.token){
         localStorage.setItem('token', data.token);
       }
-      
+      signIn(data.token);
 
       alert(data.message);
       if (formData.email === 'hod@mycollege.com') {
