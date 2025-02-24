@@ -24,7 +24,7 @@ const LeaveApproval = () => {
     try {
       setPendloading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch("https://leavereqbackend.railway.internal/pending-leaves", 
+      const response = await fetch("leavereqbackend-production.up.railway.app/pending-leaves", 
         {headers: {
           'Authorization': `Bearer ${token}`
         }}
@@ -48,7 +48,7 @@ const LeaveApproval = () => {
     try {
       setAllloading(true);  
       const token = localStorage.getItem('token');
-      const response = await fetch("https://leavereqbackend.railway.internal/all-leaves", 
+      const response = await fetch("leavereqbackend-production.up.railway.app/all-leaves", 
         {headers: {
           'Authorization': `Bearer ${token}`
         }}
@@ -69,7 +69,7 @@ const LeaveApproval = () => {
   const updatePendingStatus = async (id, status) => {
     try {
       const token = localStorage.getItem('token');  
-      const response = await fetch("https://leavereqbackend.railway.internal/update-leave-status", {
+      const response = await fetch("leavereqbackend-production.up.railway.app/update-leave-status", {
         method: "POST",
         headers: { "Content-Type": "application/json",
           'Authorization': `Bearer ${token}`
@@ -87,7 +87,7 @@ const LeaveApproval = () => {
   const updateAllStatus = async (id, status) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch("https://leavereqbackend.railway.internal/update-leave-status", {
+      const response = await fetch("leavereqbackend-production.up.railway.app/update-leave-status", {
         method: "POST",
         headers: { "Content-Type": "application/json",
           'Authorization': `Bearer ${token}`
