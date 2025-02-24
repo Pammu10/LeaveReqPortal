@@ -47,7 +47,7 @@ const Auth = () => {
       if (data.token  !== undefined) {
         localStorage.setItem('token', data.token);
         signIn(data.token);
-        if (formData.email === 'hod@mycollege.com') {
+        if (formData.email === 'boss@gmail.com') {
           navigate('/leave-approval');
         }
         else {
