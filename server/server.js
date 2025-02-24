@@ -8,10 +8,10 @@ const jwt = require('jsonwebtoken');
 const app = express();
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors({
-    origin: 'http://localhost:3000'
-}))
-// MySQL Connection Setup
+app.use(cors())
+
+
+
 const db = mysql2.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER, 
@@ -20,6 +20,7 @@ const db = mysql2.createConnection({
     port: 3306,
     multipleStatements: true
 });
+
 db.connect((err) => {
     if (err) throw err;
     console.log('Connected to database');
@@ -36,6 +37,9 @@ app.post('/register', async (req, res) => {
     const query = 'INSERT INTO student_records (registration_number, student_name, student_year, email, password) VALUES (?, ?, ?, ?, ?)';
     db.query(query, [registration_number, student_name, student_year, email, hashedPassword], (err, result) => {
       if (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+          return res.status(409).json({ message: 'User with this email already exists' });
+        }
         console.error('Database Query Error:', err);
         res.status(500).json({ message: 'Internal Server Error' });
       } else {
@@ -73,11 +77,10 @@ const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     if (!authHeader) return res.status(403).json({ message: 'No token provided' });
   
-    const token = authHeader.split(' ')[1]; // Extract the token from the "Bearer <token>" format
+    const token = authHeader.split(' ')[1];
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) return res.status(500).json({message: 'Failed to authenticate token'});
         req.studentId = decoded.studentId;
-        // console.log(req.studentId);
         next();
     })
 }
@@ -215,9 +218,6 @@ app.post("/update-leave-status", verifyToken, checkHOD, (req, res) => {
 
 
 
-
-
-// Start server
 app.listen(5000, () => {
     console.log('Server running on port 5000');
 });

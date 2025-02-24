@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {QRCodeSVG} from 'qrcode.react';
 
 const LeaveRequest = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [view, setView] = useState('request');
   const [leaveData, setLeaveData] = useState([]);
   const [leaveHistory, setLeaveHistory] = useState([]);
@@ -35,6 +37,7 @@ const LeaveRequest = () => {
 
   const fetchLeaveHistory = async () => {
     try {
+
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/leave-history', {
         headers: {
@@ -57,6 +60,7 @@ const LeaveRequest = () => {
     const data = Object.fromEntries(formData.entries());
 
     try {
+      setLoading(true);
       const response = await fetch('http://localhost:5000/submit-leave', {
         method: 'POST',
         headers: {
@@ -71,9 +75,9 @@ const LeaveRequest = () => {
       }
       const result = await response.json();
       alert(result.message);
+      setLoading(false);
       setView('status');
       form.reset();
-  
     } catch (error) {
       console.error('Error submitting leave request:', error);
     }
@@ -149,7 +153,7 @@ const LeaveRequest = () => {
             </div>
             <div className="form-group">
               <div className="d-grid gap-2 col-sm-10 mt-4">
-                <button type="submit" className="btn btn-warning">Submit Leave Application</button>
+                <button type="submit" className="btn btn-warning">{loading && <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>}Submit Leave Application</button>
               </div>
             </div>
           </form>
@@ -182,11 +186,16 @@ const LeaveRequest = () => {
                   <td>{data.from_time}</td>
                   <td>{new Date(data.to_date).toLocaleDateString()}</td>
                   <td>{data.to_time}</td>
-                  <td>{data.status}</td>
+                  <td>{data.status}</td>                    
                 </tr>
               ))}
             </tbody>
           </table>
+          <div className='col-sm-12 text-center'>
+            <QRCodeSVG className='border border-5 border-warning' value={JSON.stringify(leaveData)} size="256" />
+          </div>
+          
+
           </div>
         </div>
       )}

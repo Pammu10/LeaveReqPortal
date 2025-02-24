@@ -12,7 +12,7 @@ function App() {
   const {token} = useContext(AuthContext)
   return (
     <Router>
-      <div className="container-fluid bg-primary p-4 text-light min-vh-100">
+      <div className="container-fluid bg-primary p-4 text-light min-vh-100"> 
       {token && <Header />}
         <Routes>
           <Route path="/leave-request" element={<LeaveRequest />} />

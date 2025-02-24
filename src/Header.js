@@ -41,7 +41,7 @@ const Header = () => {
 
 
   return (
-    <div className="d-flex justify-content-end">
+    <div className="d-flex justify-content-between">
       {user && <span className="text-warning fs-4">Welcome,{userName} </span>}
       <button className="btn btn-danger btn-sm m-1 p-1" onClick={handleSignOut}>Sign Out</button>
     </div>
