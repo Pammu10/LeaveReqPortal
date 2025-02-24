@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const LeaveApproval = () => {
@@ -19,7 +19,7 @@ const LeaveApproval = () => {
           }
         }
       }, [navigate]);
-  const fetchPendingLeaves = async () => {
+  const fetchPendingLeaves = useCallback(async () => {
     setPending(true)
     try {
       setPendloading(true);
@@ -40,7 +40,7 @@ const LeaveApproval = () => {
     } catch (error) {
       console.error("Error fetching leave requests:", error);
     }
-  };
+  }, [navigate]);
 
 
   const fetchAllLeaves = async () => {

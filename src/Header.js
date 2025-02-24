@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 
@@ -13,7 +13,7 @@ const Header = () => {
     signOut();
     navigate('/');
   };
-  const getUser = async() => {
+  const getUser = useCallback(async() => {
     try {
         const response = await fetch('http://leavereqbackend.railway.internal/get-user', {
             headers: {
@@ -32,12 +32,11 @@ const Header = () => {
      catch(err){
         console.error('Error fetching user data:', err);
      }
-  }
-
+  }, [token]);
 
   useEffect(() => {
     getUser();
-  }, [token]);
+  }, [token, getUser]);
 
 
   return (
