@@ -123,7 +123,7 @@ const LeaveApproval = () => {
 
    useEffect(() => {
       fetchPendingLeaves();
-    }, []);
+    }, [fetchPendingLeaves]);
 
 
   const currentDate = new Date();
