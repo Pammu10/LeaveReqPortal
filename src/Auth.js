@@ -34,7 +34,7 @@ const Auth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = isLogin ? 'http://leavereqbackend.railway.internal/login' : 'http://leavereqbackend.railway.internal/register';
+    const url = isLogin ? 'https://leavereqbackend.railway.internal/login' : 'https://leavereqbackend.railway.internal/register';
     try {
       setLoading(true);
       const response = await fetch(url, {
