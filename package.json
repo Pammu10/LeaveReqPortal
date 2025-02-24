@@ -52,5 +52,4 @@
     ]
   },
   "homepage": "https://leavereqportal-production.up.railway.app/",
-  "proxy": "http://localhost:5000"
 }
