@@ -34,7 +34,7 @@ const Auth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = isLogin ? 'leavereqbackend-production.up.railway.app/login' : 'leavereqbackend-production.up.railway.app/register';
+    const url = isLogin ? 'https://leavereqbackend-production.up.railway.app/login' : 'https://leavereqbackend-production.up.railway.app/register';
     try {
       setLoading(true);
       const response = await fetch(url, {

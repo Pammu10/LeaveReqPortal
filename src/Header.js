@@ -15,7 +15,7 @@ const Header = () => {
   };
   const getUser = useCallback(async() => {
     try {
-        const response = await fetch('leavereqbackend-production.up.railway.app/get-user', {
+        const response = await fetch('https://leavereqbackend-production.up.railway.app/get-user', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
