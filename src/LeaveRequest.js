@@ -22,7 +22,7 @@ const LeaveRequest = () => {
   const fetchLeaveData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/leave-status/latest', {
+      const response = await fetch('http://leavereqbackend.railway.internal/leave-status/latest', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -39,7 +39,7 @@ const LeaveRequest = () => {
     try {
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/leave-history', {
+      const response = await fetch('http://leavereqbackend.railway.internal/leave-history', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -61,7 +61,7 @@ const LeaveRequest = () => {
 
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/submit-leave', {
+      const response = await fetch('http://leavereqbackend.railway.internal/submit-leave', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

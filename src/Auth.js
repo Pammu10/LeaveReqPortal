@@ -4,7 +4,6 @@ import { AuthContext } from './AuthContext';
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [scan, setScan] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -35,7 +34,7 @@ const Auth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = isLogin ? 'http://localhost:5000/login' : 'http://localhost:5000/register';
+    const url = isLogin ? 'http://leavereqbackend.railway.internal/login' : 'http://leavereqbackend.railway.internal/register';
     try {
       setLoading(true);
       const response = await fetch(url, {

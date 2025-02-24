@@ -15,7 +15,7 @@ const Header = () => {
   };
   const getUser = async() => {
     try {
-        const response = await fetch('http://localhost:5000/get-user', {
+        const response = await fetch('http://leavereqbackend.railway.internal/get-user', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

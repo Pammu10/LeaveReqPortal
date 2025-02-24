@@ -28,7 +28,9 @@ db.connect((err) => {
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-
+app.get('/', (req, res) => {
+  res.status(200).json({message: 'You are working fine'})
+})
 
 // Registration endpoint
 app.post('/register', async (req, res) => {
