@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = process.env.REACT_APP_API_BASE_URL;
+
+
 const LeaveApproval = () => {
   const navigate = useNavigate();
   const [pendloading, setPendloading] = useState(false);
@@ -24,7 +27,7 @@ const LeaveApproval = () => {
     try {
       setPendloading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch("https://leavereqbackend-production.up.railway.app/pending-leaves", 
+      const response = await fetch(`${API_URL}/pending-leaves`, 
         {headers: {
           'Authorization': `Bearer ${token}`
         }}
@@ -48,7 +51,7 @@ const LeaveApproval = () => {
     try {
       setAllloading(true);  
       const token = localStorage.getItem('token');
-      const response = await fetch("https://leavereqbackend-production.up.railway.app/all-leaves", 
+      const response = await fetch(`${API_URL}/all-leaves`, 
         {headers: {
           'Authorization': `Bearer ${token}`
         }}
@@ -69,7 +72,7 @@ const LeaveApproval = () => {
   const updatePendingStatus = async (id, status) => {
     try {
       const token = localStorage.getItem('token');  
-      const response = await fetch("https://leavereqbackend-production.up.railway.app/update-leave-status", {
+      const response = await fetch(`${API_URL}/update-leave-status`, {
         method: "POST",
         headers: { "Content-Type": "application/json",
           'Authorization': `Bearer ${token}`
@@ -87,7 +90,7 @@ const LeaveApproval = () => {
   const updateAllStatus = async (id, status) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch("https://leavereqbackend-production.up.railway.app/update-leave-status", {
+      const response = await fetch(`${API_URL}/update-leave-status`, {
         method: "POST",
         headers: { "Content-Type": "application/json",
           'Authorization': `Bearer ${token}`
@@ -152,10 +155,10 @@ const LeaveApproval = () => {
           </tr>
         </thead>
         <tbody>
-          {pendingLeaves?.length === 0 ? (
+          {pendingLeaves.length === 0 ? (
             <tr><td colSpan="12">No pending leave requests</td></tr>
           ) : (
-            pendingLeaves?.map(item => {
+            pendingLeaves.map(item => {
               const fromDate = new Date(item.from_date);
               const showModifyButton = currentDate < fromDate;
               return (

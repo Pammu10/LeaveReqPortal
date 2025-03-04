@@ -2,6 +2,9 @@ import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 
+const API_URL = process.env.REACT_APP_API_BASE_URL;
+
+
 const Header = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState('User');
@@ -15,7 +18,7 @@ const Header = () => {
   };
   const getUser = useCallback(async() => {
     try {
-        const response = await fetch('https://leavereqbackend-production.up.railway.app/get-user', {
+        const response = await fetch(`${API_URL}/get-user`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

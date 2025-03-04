@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {QRCodeSVG} from 'qrcode.react';
+import QrCodeGenerator from './QrCodeGenerator';
+
+const API_URL = process.env.REACT_APP_API_BASE_URL;
+
+
 
 const LeaveRequest = () => {
   const navigate = useNavigate();
@@ -22,12 +26,16 @@ const LeaveRequest = () => {
   const fetchLeaveData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://leavereqbackend-production.up.railway.app/leave-status/latest', {
+      const response = await fetch(`${API_URL}/leave-status/latest`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok){
+        alert("Apply for leave first")
+        setView('request')
+        throw new Error('Network response was not ok');
+      } 
       const data = await response.json();
       setLeaveData([data]);
     } catch (error) {
@@ -39,12 +47,16 @@ const LeaveRequest = () => {
     try {
 
       const token = localStorage.getItem('token');
-      const response = await fetch('https://leavereqbackend-production.up.railway.app/leave-history', {
+      const response = await fetch(`${API_URL}/leave-history`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok){
+        alert("Apply for leave first")
+        setView('request')
+        throw new Error('Network response was not ok');
+      } 
       const data = await response.json();
       setLeaveHistory(Array.isArray(data) ? data : [data]);
     } catch (error) {
@@ -61,7 +73,7 @@ const LeaveRequest = () => {
 
     try {
       setLoading(true);
-      const response = await fetch('https://leavereqbackend-production.up.railway.app/submit-leave', {
+      const response = await fetch(`${API_URL}/submit-leave`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,86 +165,59 @@ const LeaveRequest = () => {
             </div>
             <div className="form-group">
               <div className="d-grid gap-2 col-sm-10 mt-4">
-                <button type="submit" className="btn btn-warning">{loading && <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>}Submit Leave Application</button>
+                <button type="submit" className="btn btn-warning">{loading && <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>}Submit Leave Application</button>
               </div>
             </div>
           </form>
         </div>
       )}
       {view === 'status' && (
-        <div className='d-grid gap-2 col-sm-10'>
-          <h2>Leave Data</h2>
-          <div className='table-responsive'>
-          <table className="table table-warning table-striped table-hover align-middle">
-            <thead>
-              <tr>
-                <th>Leave Type</th>
-                <th>Visiting Place</th>
-                <th>Reason</th>
-                <th>From Date</th>
-                <th>From Time</th>
-                <th>To Date</th>
-                <th>To Time</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaveData.map((data, index) => (
-                <tr key={index}>
-                  <td>{data.leave_type}</td>
-                  <td>{data.visiting_place}</td>
-                  <td>{data.reason}</td>
-                  <td>{new Date(data.from_date).toLocaleDateString()}</td>
-                  <td>{data.from_time}</td>
-                  <td>{new Date(data.to_date).toLocaleDateString()}</td>
-                  <td>{data.to_time}</td>
-                  <td>{data.status}</td>                    
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        
+          leaveData?.length !== 0 ? <div className='d-grid gap-2 col-sm-10 mt-4'>
           <div className='col-sm-12 text-center'>
-            <QRCodeSVG className='border border-5 border-warning' value={JSON.stringify(leaveData)} size="256" />
+            <QrCodeGenerator leaveData={leaveData}/>
           </div>
-          
+          </div>
+          : <div className='mt-4'> Apply for leave</div>
 
-          </div>
-        </div>
+        
       )}
       {view === 'history' && (
-        <div className='d-grid gap-2 col-sm-10'>
-          <h2>Leave History</h2>
-          <div className='table-responsive'>
-          <table className="table table-warning table-striped table-hover table align-middle">
-            <thead>
-              <tr>
-                <th>Leave Type</th>
-                <th>Visiting Place</th>
-                <th>Reason</th>
-                <th>From Date</th>
-                <th>From Time</th>
-                <th>To Date</th>
-                <th>To Time</th>
-                <th>Status</th>
+        leaveHistory?.length !== 0 ? <div className='d-grid gap-2 col-sm-10'>
+        <h2>Leave History</h2>
+        <div className='table-responsive'>
+        <table className="table table-warning table-striped table-hover table align-middle">
+          <thead>
+            <tr>
+              <th>Leave Type</th>
+              <th>Visiting Place</th>
+              <th>Reason</th>
+              <th>From Date</th>
+              <th>From Time</th>
+              <th>To Date</th>
+              <th>To Time</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leaveHistory.map((item, index) => (
+              <tr key={index}>
+                <td>{item.leave_type}</td>
+                <td>{item.visiting_place}</td>
+                <td>{item.reason}</td>
+                <td>{new Date(item.from_date).toLocaleDateString()}</td>
+                <td>{item.from_time}</td>
+                <td>{new Date(item.to_date).toLocaleDateString()}</td>
+                <td>{item.to_time}</td>
+                <td>{item.status}</td>
               </tr>
-            </thead>
-            <tbody>
-              {leaveHistory.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.leave_type}</td>
-                  <td>{item.visiting_place}</td>
-                  <td>{item.reason}</td>
-                  <td>{new Date(item.from_date).toLocaleDateString()}</td>
-                  <td>{item.from_time}</td>
-                  <td>{new Date(item.to_date).toLocaleDateString()}</td>
-                  <td>{item.to_time}</td>
-                  <td>{item.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
+            ))}
+          </tbody>
+        </table>
         </div>
+      </div>
+      : <div className='mt-4'>No leaves applied yet</div>
+        
       )}
     </div>
   );

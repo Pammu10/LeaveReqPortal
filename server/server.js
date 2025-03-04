@@ -5,11 +5,13 @@ const mysql2 = require('mysql2');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+
 const app = express();
+
+
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors())
-
 
 
 const db = mysql2.createConnection({
@@ -26,6 +28,49 @@ db.connect((err) => {
     console.log('Connected to database');
 });
 
+
+app.post("/auth/google/callback", async (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: "Authorization code is required" });
+
+  try {
+    // Exchange authorization code for tokens
+    const idToken = code.credential;
+    // Decode ID token
+    const decoded = jwt.decode(idToken);
+    const { email, name, sub } = decoded;
+    if (!email) return res.status(400).json({ error: "Invalid Google response" });
+
+    // Check if user exists
+    db.query("SELECT * FROM users WHERE email = ?", [email], (err, results) => {
+      if (err) return res.status(500).json({ error: "Database error" });
+
+      if (results.length === 0) {
+        // Insert user and generate token **after insert is successful**
+        db.query(
+          "INSERT INTO users (registration_number, student_name, email, password, role) VALUES (?, ?, ?, ?, ?)",
+          [sub, name, email, null, 1],
+          (insertErr) => {
+            if (insertErr) return res.status(500).json({ error: insertErr });
+
+            // Generate JWT after insertion
+            const jwtToken = jwt.sign({ email, name, id: sub }, process.env.JWT_SECRET, { expiresIn: "7d" });
+            return res.json({ token: jwtToken }); // ✅ RESPONSE SENT HERE
+          }
+        );
+      } else {
+        // User already exists, send token immediately
+        const jwtToken = jwt.sign({ email, name, id: sub }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        return res.json({ token: jwtToken }); // ✅ RESPONSE SENT HERE
+      }
+    });
+  } catch (error) {
+    console.error("Error exchanging code:", error);
+    if (!res.headersSent) res.status(400).json({ error: "Failed to authenticate with Google" });
+  }
+});
+
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 app.get('/', (req, res) => {
@@ -34,10 +79,10 @@ app.get('/', (req, res) => {
 
 // Registration endpoint
 app.post('/register', async (req, res) => {
-    const { registration_number, student_name, student_year, email, password } = req.body;
+    const { registration_number, student_name, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const query = 'INSERT INTO student_records (registration_number, student_name, student_year, email, password) VALUES (?, ?, ?, ?, ?)';
-    db.query(query, [registration_number, student_name, student_year, email, hashedPassword], (err, result) => {
+    const query = 'INSERT INTO users (registration_number, student_name, email, password, role) VALUES (?, ?, ?, ?, ?)';
+    db.query(query, [registration_number, student_name, email, hashedPassword, 1], (err, result) => {
       if (err) {
         if (err.code === 'ER_DUP_ENTRY') {
           return res.status(409).json({ message: 'User with this email already exists' });
@@ -54,7 +99,7 @@ app.post('/register', async (req, res) => {
   // Login endpoint
   app.post('/login', (req, res) => {
     const { email, password } = req.body;
-    const query = 'SELECT * FROM student_records WHERE email = ?';
+    const query = 'SELECT * FROM users WHERE email = ?';
     db.query(query, [email], async (err, result) => {
       if (err) {
         console.error('Database Query Error:', err);
@@ -81,27 +126,20 @@ const verifyToken = (req, res, next) => {
   
     const token = authHeader.split(' ')[1];
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) return res.status(500).json({message: 'Failed to authenticate token'});
-        req.studentId = decoded.studentId;
+        if (err) return res.status(403).json({message: 'Failed to authenticate token'});
+        // req.studentId = decoded.studentId;
+        req.user = decoded;
         next();
     })
 }
-
-const checkHOD =  (req, res, next) => {
-    if (req.studentId !== 'A') {
-        return res.status(403).json({ message: 'Unauthorized' });
-    }
-    next();
-}
-
 
 
 //GET ROUTES FOR STUDENT
 
 
 app.get('/get-user', verifyToken, (req, res) => {
-    const studentId = req.studentId;
-    const query = 'SELECT student_name FROM student_records WHERE registration_number = ?';
+    const studentId = req.user.id;
+    const query = 'SELECT student_name FROM users WHERE registration_number = ?';
     db.query(query, [studentId], (err, result) => {
         if (err) {
             console.error('Database Query Error:', err);
@@ -116,7 +154,7 @@ app.get('/get-user', verifyToken, (req, res) => {
 
 app.get('/leave-status/latest', verifyToken, (req, res) => {
     try {
-      const studentId = req.studentId;
+      const studentId = req.user.id;
       const query = 'SELECT * FROM leave_requests WHERE studentID = ? ORDER BY created_at DESC LIMIT 1';
       
       db.query(query, [studentId], (err, result) => {
@@ -139,7 +177,8 @@ app.get('/leave-status/latest', verifyToken, (req, res) => {
 
 app.get('/leave-history/', verifyToken, (req, res) => {
     try {
-        const studentId = req.studentId;
+        const studentId = req.user.id;
+        console.log(studentId)
         const query = "SELECT * FROM leave_requests WHERE studentID = ? ORDER BY created_at DESC";
         
         db.query(query, [studentId], (err, result) => {
@@ -162,7 +201,7 @@ app.get('/leave-history/', verifyToken, (req, res) => {
 app.post('/submit-leave', verifyToken, (req, res) => {
     try{
     const { Ltype, Visit, fdate, tform, tdate, tto, reason } = req.body;
-    const regno = req.studentId;
+    const regno = req.user.id;
     const query = 'INSERT INTO leave_requests (leave_type, visiting_place, from_date, from_time, to_date, to_time, reason, studentID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
     
     db.query(query, [Ltype, Visit, fdate, tform, tdate, tto, reason, regno], (err, result) => {
@@ -179,8 +218,8 @@ app.post('/submit-leave', verifyToken, (req, res) => {
 
 // HOD PAGES
 
-app.get("/pending-leaves", verifyToken, checkHOD, (req, res) => {
-    const query = "SELECT * from leave_requests l, student_records r where l.studentID = r.registration_number AND l.status = 'pending' ORDER BY created_at DESC";
+app.get("/pending-leaves", verifyToken, (req, res) => {
+    const query = "SELECT * from leave_requests l, users r where l.studentID = r.registration_number AND l.status = 'pending' ORDER BY created_at DESC";
     db.query(query, (err, result) => {
         if (err) {
             console.error("Database Query Error:", err);
@@ -191,8 +230,8 @@ app.get("/pending-leaves", verifyToken, checkHOD, (req, res) => {
 });
 
 
-app.get("/all-leaves", verifyToken, checkHOD, (req, res) => {
-  const query = "SELECT * from leave_requests l, student_records r where l.studentID = r.registration_number ORDER BY created_at DESC;";
+app.get("/all-leaves", verifyToken, (req, res) => {
+  const query = "SELECT * from leave_requests l, users r where l.studentID = r.registration_number ORDER BY created_at DESC;";
   db.query(query, (err, result) => {
       if (err) {
           console.error("Database Query Error:", err);
@@ -203,7 +242,7 @@ app.get("/all-leaves", verifyToken, checkHOD, (req, res) => {
 });
 
 
-app.post("/update-leave-status", verifyToken, checkHOD, (req, res) => {
+app.post("/update-leave-status", verifyToken, (req, res) => {
     const { id, status } = req.body;
     if (!["approved", "rejected"].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });

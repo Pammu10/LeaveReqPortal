@@ -1,6 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
+import GAuth from './GAuth';
+
+const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -20,7 +23,7 @@ const Auth = () => {
       if (token) {
         const user = JSON.parse(atob(token.split('.')[1]));
         console.log(user)
-        if (user.studentId === 'A') {
+        if (user.email === 'A') {
           navigate('/leave-approval');
         } else {
           navigate('/leave-request');
@@ -34,7 +37,7 @@ const Auth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = isLogin ? 'https://leavereqbackend-production.up.railway.app/login' : 'https://leavereqbackend-production.up.railway.app/register';
+    const url = isLogin ? `${API_URL}/login` : `${API_URL}/register`;
     try {
       setLoading(true);
       const response = await fetch(url, {
@@ -64,8 +67,7 @@ const Auth = () => {
 
   return (
     <>
-      <div className="container d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-        
+      <div className="container d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '100vh', maxWidth: '100%'}}>
       <div className="row align-items-center mb-3">
         <h1 className='col-sm text-center'>{isLogin ? 'Login' : 'Register'}</h1>
       </div>
@@ -75,21 +77,15 @@ const Auth = () => {
             {!isLogin && (
               <>
                 <div className="form-group row align-items-center mb-3">
-                  <label className='col-sm-6 text-right'>Registration Number:</label>
+                  <label className='col-sm-6 text-right'>Employee Number:</label>
                   <div className='col-sm-6'>
                     <input className='form-control' type="text" name="registration_number" value={formData.registration_number} onChange={handleChange} required />
                   </div>
                 </div>
                 <div className="form-group row align-items-center mb-3">
-                  <label className='col-sm-6 text-right'>Student Name:</label>
+                  <label className='col-sm-6 text-right'>Name:</label>
                   <div className='col-sm-6'>
                     <input className='form-control' type="text" name="student_name" value={formData.student_name} onChange={handleChange} required />
-                  </div>
-                </div>
-                <div className="form-group row align-items-center mb-3">
-                  <label className='col-sm-6 text-right'>Student Year:</label>
-                  <div className='col-sm-6'>
-                    <input className='form-control' type="text" name="student_year" value={formData.student_year} onChange={handleChange} required />
                   </div>
                 </div>
               </>
@@ -119,10 +115,11 @@ const Auth = () => {
             <button className='btn btn-warning mt-2' onClick={() => setIsLogin(!isLogin)}>
               {isLogin ? 'Switch to Register' : 'Switch to Login'}
             </button>
-          </div>          
+            <div className='btn mt-2'><GAuth/></div> 
+          </div>    
+               
         </div>
-        
-      </div>
+        </div>
       </div>
     </>
 
