@@ -23,10 +23,7 @@ const db = mysql2.createConnection({
     multipleStatements: true
 });
 
-db.connect((err) => {
-    if (err) throw err;
-    console.log('Connected to database');
-});
+
 
 
 app.post("/auth/google/callback", async (req, res) => {
@@ -34,34 +31,28 @@ app.post("/auth/google/callback", async (req, res) => {
   if (!code) return res.status(400).json({ error: "Authorization code is required" });
 
   try {
-    // Exchange authorization code for tokens
     const idToken = code.credential;
-    // Decode ID token
     const decoded = jwt.decode(idToken);
     const { email, name, sub } = decoded;
     if (!email) return res.status(400).json({ error: "Invalid Google response" });
 
-    // Check if user exists
     db.query("SELECT * FROM users WHERE email = ?", [email], (err, results) => {
       if (err) return res.status(500).json({ error: "Database error" });
 
       if (results.length === 0) {
-        // Insert user and generate token **after insert is successful**
         db.query(
-          "INSERT INTO users (registration_number, student_name, email, password, role) VALUES (?, ?, ?, ?, ?)",
-          [sub, name, email, null, 1],
+          "INSERT INTO users (registration_number, student_name, email, role) VALUES (?, ?, ?, ?)",
+          [sub, name, email, 1],
           (insertErr) => {
             if (insertErr) return res.status(500).json({ error: insertErr });
 
-            // Generate JWT after insertion
-            const jwtToken = jwt.sign({ email, name, id: sub }, process.env.JWT_SECRET, { expiresIn: "7d" });
-            return res.json({ token: jwtToken }); // ✅ RESPONSE SENT HERE
+            const jwtToken = jwt.sign({ email, name, id: sub, role: 1 }, process.env.JWT_SECRET, { expiresIn: "7d" });
+            return res.json({ token: jwtToken });
           }
         );
       } else {
-        // User already exists, send token immediately
-        const jwtToken = jwt.sign({ email, name, id: sub }, process.env.JWT_SECRET, { expiresIn: "7d" });
-        return res.json({ token: jwtToken }); // ✅ RESPONSE SENT HERE
+        const jwtToken = jwt.sign({ email, name, id: sub, role: results[0].role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        return res.json({ token: jwtToken }); 
       }
     });
   } catch (error) {
@@ -120,19 +111,30 @@ app.post('/register', async (req, res) => {
   });
 
 
-const verifyToken = (req, res, next) => {
+
+  const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     if (!authHeader) return res.status(403).json({ message: 'No token provided' });
   
     const token = authHeader.split(' ')[1];
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) return res.status(403).json({message: 'Failed to authenticate token'});
-        // req.studentId = decoded.studentId;
         req.user = decoded;
         next();
     })
-}
+  }
 
+  const checkAdmin = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(403).json({ message: 'No token provided' });
+  
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(403).json({message: 'Failed to authenticate token'});
+        if (decoded.role !== 0) return res.status(403).json({message: 'Unauthorized token'});
+        next();
+    })
+  }
 
 //GET ROUTES FOR STUDENT
 
@@ -178,7 +180,6 @@ app.get('/leave-status/latest', verifyToken, (req, res) => {
 app.get('/leave-history/', verifyToken, (req, res) => {
     try {
         const studentId = req.user.id;
-        console.log(studentId)
         const query = "SELECT * FROM leave_requests WHERE studentID = ? ORDER BY created_at DESC";
         
         db.query(query, [studentId], (err, result) => {
@@ -210,7 +211,7 @@ app.post('/submit-leave', verifyToken, (req, res) => {
     });
     }
     catch(err){
-        console.log(err);
+        console.error(err);
     }
     
 });
@@ -218,7 +219,7 @@ app.post('/submit-leave', verifyToken, (req, res) => {
 
 // HOD PAGES
 
-app.get("/pending-leaves", verifyToken, (req, res) => {
+app.get("/pending-leaves", verifyToken, checkAdmin, (req, res) => {
     const query = "SELECT * from leave_requests l, users r where l.studentID = r.registration_number AND l.status = 'pending' ORDER BY created_at DESC";
     db.query(query, (err, result) => {
         if (err) {
@@ -230,7 +231,7 @@ app.get("/pending-leaves", verifyToken, (req, res) => {
 });
 
 
-app.get("/all-leaves", verifyToken, (req, res) => {
+app.get("/all-leaves", verifyToken, checkAdmin, (req, res) => {
   const query = "SELECT * from leave_requests l, users r where l.studentID = r.registration_number ORDER BY created_at DESC;";
   db.query(query, (err, result) => {
       if (err) {
@@ -259,6 +260,18 @@ app.post("/update-leave-status", verifyToken, (req, res) => {
 
 
 
-app.listen(8080, () => {
-    console.log('Server running on port 8080');
+
+
+
+
+const startServer = async () => {
+  db.connect((err) => {
+    if (err) throw err;
+    console.log('Connected to database');
 });
+  app.listen(8080, () => {
+  console.log('Server running on port 8080');
+});
+}
+
+startServer();

@@ -5,8 +5,7 @@ const clientId = "640719651317-0v36rsmh7tup3k7t6kedq20kiepmuqb9.apps.googleuserc
 
 const GAuth = () => {
     const onSuccess = async (response) => {
-        console.log("Login Success:", response);
-        
+           
         try {
           const res = await fetch("http://localhost:8080/auth/google/callback", {
             method: "POST",
@@ -17,10 +16,15 @@ const GAuth = () => {
           });
       
           const data = await res.json();
-          console.log(data)
           if (data.token) {
             localStorage.setItem("token", data.token);
-            window.location.href = `/leave-request`;
+            const user = JSON.parse(atob(data.token.split('.')[1]));
+            if (user.role === 0) {
+              window.location.href = `/leave-approval`;
+            }
+            else {
+              window.location.href = `/leave-request`;
+            }
           } else {
             console.log("Error logging in:", data);
           }
@@ -31,7 +35,7 @@ const GAuth = () => {
       
 
   const onError = () => {
-    console.log("Login Failed");
+    alert("Login Failed");
   };
 
   return (

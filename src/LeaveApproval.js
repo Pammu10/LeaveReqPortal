@@ -9,19 +9,26 @@ const LeaveApproval = () => {
   const [pendloading, setPendloading] = useState(false);
   const [allloading, setAllloading] = useState(false);
   const [pendingLeaves, setPendingLeaves] = useState([]);
+  const [allLeaves, setAllLeaves] = useState([]);
   const [pending, setPending] = useState(true);
   const [modifyingId, setModifyingId] = useState(null);
   useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
           const user = JSON.parse(atob(token.split('.')[1]));
-          if (user.studentId === 'A') {
+          console.log(user.role);
+          if (user.role === 0) {
             navigate('/leave-approval');
           } else {
             navigate('/leave-request');
           }
         }
       }, [navigate]);
+
+
+    useEffect(() => {
+      console.log(allLeaves);
+    }, [allLeaves]);
   const fetchPendingLeaves = useCallback(async () => {
     setPending(true)
     try {
@@ -62,7 +69,7 @@ const LeaveApproval = () => {
         return;
       }
       const data = await response.json();
-      setPendingLeaves(data);
+      setAllLeaves(data);
       setAllloading(false);
     } catch (error) {
       console.error("Error fetching leave requests:", error);
@@ -118,8 +125,8 @@ const LeaveApproval = () => {
       return;
     }
 
-    const studentId = JSON.parse(atob(token.split('.')[1])).studentId;
-    if (studentId !== 'A') {
+    const role = JSON.parse(atob(token.split('.')[1])).role;
+    if (role !== 0) {
       navigate('/');
     }
   }, [navigate]);
@@ -140,9 +147,8 @@ const LeaveApproval = () => {
       <table className='table table-warning table-striped table-hover table align-middle'>
         <thead>
           <tr>
-            <th>Student Reg</th>
+            <th>Reg No</th>
             <th>Student Name</th>
-            <th>Student Year</th>
             <th>Leave Type</th>
             <th>Visiting Place</th>
             <th>From Date</th>
@@ -155,17 +161,14 @@ const LeaveApproval = () => {
           </tr>
         </thead>
         <tbody>
-          {pendingLeaves.length === 0 ? (
+          {pending ? <>{!pendingLeaves || pendingLeaves.length === 0 ? (
             <tr><td colSpan="12">No pending leave requests</td></tr>
           ) : (
             pendingLeaves.map(item => {
-              const fromDate = new Date(item.from_date);
-              const showModifyButton = currentDate < fromDate;
               return (
               <tr key={item.id} className={item.status === 'rejected' ? 'table-warning' : item.status === 'approved' ? 'table-info' : ''}>
-                <td>{item.studentID}</td>
+                <td>{item.studentID.slice(-4)}</td>
                 <td>{item.student_name}</td>
-                <td>{item.student_year}</td>
                 <td>{item.leave_type}</td>
                 <td>{item.visiting_place}</td>
                 <td>{new Date(item.from_date).toLocaleDateString()}</td>
@@ -175,31 +178,63 @@ const LeaveApproval = () => {
                 <td>{item.reason}</td>
               <td>{item.status}</td>
               <td>
-                {pending === true ? (<div className="btn-group-vertical">
+                <div className="btn-group-vertical">
                   <button className="btn btn-success p-1 m-1 rounded" onClick={() => updatePendingStatus(item.id, 'approved')}>Approve</button>
                   <button className="btn btn-danger p-1 m-1 rounded" onClick={() => updatePendingStatus(item.id, 'rejected')}>Reject</button>
-                  </div>) : (
-                      modifyingId === item.id ? (
+                  </div>
+                  </td>
+                </tr> 
+                )
+              })
+            )}  
+          </>
+          
+          : 
+          <>
+          {!allLeaves || allLeaves.length === 0 ? (
+            <tr><td colSpan="12">No leave requests</td></tr>
+          ) : (
+            allLeaves.map(item => {
+              const fromDate = new Date(item.from_date);
+              const showModifyButton = currentDate < fromDate;
+              return (
+              <tr key={item.id} className={item.status === 'rejected' ? 'table-warning' : item.status === 'approved' ? 'table-info' : ''}>
+                <td>{item.studentID.slice(-4)}</td>
+                <td>{item.student_name}</td>
+                <td>{item.leave_type}</td>
+                <td>{item.visiting_place}</td>
+                <td>{new Date(item.from_date).toLocaleDateString()}</td>
+                <td>{item.from_time}</td>
+                <td>{new Date(item.to_date).toLocaleDateString()}</td>
+                <td>{item.to_time}</td>
+                <td>{item.reason}</td>
+              <td>{item.status}</td>
+              <td>
+                {
+                  showModifyButton && modifyingId === item.id ? (
                         <div className="btn-group-vertical">
                           <button className="btn btn-success p-1 m-1 rounded" onClick={() => updateAllStatus(item.id, 'approved')}>Accept</button>
                           <button className="btn btn-danger p-1 m-1 rounded" onClick={() => updateAllStatus(item.id, 'rejected')}>Reject</button>
                         </div>
                       ) : (
                         showModifyButton ? (
-                          <button className="btn btn-info p-1 m-1 rounded" onClick={() => modifyStatus(item.id)}>Modify</button>
+                          item.status !== 'Pending' && <button className="btn btn-info p-1 m-1 rounded"   onClick={() => modifyStatus(item.id)}>Modify</button>
                         ) : (
                           ''
                         )
                       )
-                    )}
-                  
-                </td>
-              </tr>
-            );
-          })
-          )}
-        </tbody>
-      </table>
+                }
+                      
+                     </td>
+                    </tr>
+                    )
+                  })
+                )
+              }
+            </>
+          }
+      </tbody>
+    </table>
     </div>
     </div>
   );

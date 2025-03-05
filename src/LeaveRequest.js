@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import QrCodeGenerator from './QrCodeGenerator';
 
 const API_URL = process.env.REACT_APP_API_BASE_URL;
@@ -7,22 +6,10 @@ const API_URL = process.env.REACT_APP_API_BASE_URL;
 
 
 const LeaveRequest = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState('request');
   const [leaveData, setLeaveData] = useState([]);
   const [leaveHistory, setLeaveHistory] = useState([]);
-  useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const user = JSON.parse(atob(token.split('.')[1]));
-          if (user.email === 'hod@mycollege.com') {
-            navigate('/leave-approval');
-          } else {
-            navigate('/leave-request');
-          }
-        }
-      }, [navigate]);
   const fetchLeaveData = async () => {
     try {
       const token = localStorage.getItem('token');

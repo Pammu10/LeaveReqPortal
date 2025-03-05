@@ -6,6 +6,7 @@ import Auth from './Auth';
 import Header from './Header';
 import NoPage from './NoPage';
 import { AuthContext, AuthProvider } from './AuthContext';
+import ParentComponent from './test/ParentComponent';
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/leave-approval" element={<LeaveApproval />} />
           <Route path="/" element={<Auth/>} />
           <Route path="*" element={<NoPage />} />
+          <Route path="/test" element={<ParentComponent/>}/>
         </Routes>
       </div>
     </Router>
